@@ -78,11 +78,18 @@ susceptible_to_infected = function(day_list, number){
       if (day_list[[i]]$status != "D"){
         count = count + 1
       }
-      if (day_list[[i]]$status == "I"){
-        if (day_list[[i]]$kitchen == kitchen_x){
-          total_prob = total_prob + rate
+      if (kitchen_x == 0){
+        if (day_list[[i]]$status == "I"){
+          total_prob = total_prob + rate_for_professors
         }
-        else total_prob = total_prob + penalty_rate
+      }
+      else{
+        if (day_list[[i]]$status == "I"){
+          if (day_list[[i]]$kitchen == kitchen_x){
+            total_prob = total_prob + rate
+          }
+          else total_prob = total_prob + penalty_rate
+        }
       }
     }
   }
