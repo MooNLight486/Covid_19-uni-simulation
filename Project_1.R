@@ -5,7 +5,7 @@ penalty_rate = 0.35 #0.35
 quarantine_rate = 0.25 #0.2
 total_days = 30 #30
 infected_day_1 = 15 #15
-vaccinated_day_1 = 35 #35
+vaccinated_day_1 = 10 #35
 vaccination_rate_penalty = 0.06 #0.06
 testing_start_day = 2 #2, first test date (day number)
 testing_interval = 3 #3, interval between tests, days
@@ -53,8 +53,10 @@ susceptible_to_infected = function(day_list, number){
   kitchen_x = day_list[[number]]$kitchen
   for (i in 1:people_total){
     if (i != number){
-      if (day_list[[i]]$status == "I"){
+      if (day_list[[i]]$status != "D"){
         count = count + 1
+      }
+      if (day_list[[i]]$status == "I"){
         if (day_list[[i]]$kitchen == kitchen_x){
           total_prob = total_prob + rate
         }
