@@ -1,3 +1,3 @@
 # Covid_19-uni-simulation
 3rd year project
-A test build with more features, but not fully tested. Hence, can contain bugs or even mistakes / wrong methods implementations.
+This is the stable version of the project, which is working well, all methods are implemented correctly. A lot of tests have been run.
