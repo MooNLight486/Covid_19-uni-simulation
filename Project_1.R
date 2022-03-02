@@ -2,11 +2,14 @@ all_list = list()
 people_in_kitchen = 10 #10
 rate = 0.7 #0.7
 penalty_rate = 0.35 #0.35
-quarantine_rate = 0.2 #0.2
+quarantine_rate = 0.25 #0.2
 total_days = 30 #30
 infected_day_1 = 15 #15
-vaccinated_day_1 = 35 #35
+vaccinated_day_1 = 10 #35
 vaccination_rate_penalty = 0.06 #0.06
+testing_start_day = 2 #2, first test date (day number)
+testing_interval = 3 #3, interval between tests, days
+people_tested_coef = 0.3 #0.3, percentage of people tested every test period
 rate_of_death = 0.001 #0.009 according to UK stats // get rid of
 people_total = readline(prompt = "Enter number of people in sim ")
 people_total = strtoi(people_total)
@@ -50,8 +53,10 @@ susceptible_to_infected = function(day_list, number){
   kitchen_x = day_list[[number]]$kitchen
   for (i in 1:people_total){
     if (i != number){
-      if (day_list[[i]]$status == "I"){
+      if (day_list[[i]]$status != "D"){
         count = count + 1
+      }
+      if (day_list[[i]]$status == "I"){
         if (day_list[[i]]$kitchen == kitchen_x){
           total_prob = total_prob + rate
         }
@@ -78,24 +83,24 @@ new_day = function(previous_day, day_number){
     if (previous_day[[i]]$status == "S"){
       result = susceptible_to_infected(previous_day, i)
       if (result == 1){
-        newday[[i]]$status = "I"
-      }
-    }
-    else if (previous_day[[i]]$status == "I"){
-        result1 = infected_to_quarantine(day_number, i)
+        result1 = symptoms_to_quarantine(day_number, i)
         if (result1 == 1){
           newday[[i]]$status = "Q"
         }
-        else{
-          result = death_prob(day_number,i)
+        else {
+          newday[[i]]$status = "I"
+        }
+      }
+    }
+    else if (previous_day[[i]]$status == "I"){
+        result = death_prob(day_number,i)
+        if (result == 1){
+          newday[[i]]$status = "D"
+        }
+        else {
+          result = infected_to_recovered(day_number, i)
           if (result == 1){
-            newday[[i]]$status = "D"
-          }
-          else {
-            result = infected_to_recovered(day_number, i)
-            if (result == 1){
-              newday[[i]]$status = "R"
-            }
+            newday[[i]]$status = "R"
           }
         }
     }
@@ -112,15 +117,15 @@ new_day = function(previous_day, day_number){
       }
     }
   }
+  if ((day_number - testing_start_day) %% testing_interval == 0){
+    newday = testing(newday)
+  }
   return (newday)
 }
 
-infected_to_quarantine = function(day_number, i){ #ill 1 day
+symptoms_to_quarantine = function(day_number, i){ #ill 1 day
   if (day_number >= 2){
-    result = 0
-    if (day_number == 2 || all_list[[day_number-2]][[i]]$status == "S"){
-      result = rbinom(1,1,quarantine_rate)
-    }
+    result = rbinom(1,1,quarantine_rate)
     return (result)
   }
   return (0)
@@ -144,6 +149,25 @@ infected_to_recovered = function(day_number, i){ #ill for 2+ days
     return (result)
   }
   return (0)
+}
+
+testing = function(newday){
+  eligible_for_test = list()
+  for (i in 1:people_total){
+    if ((newday[[i]]$status != "Q") && (newday[[i]]$status != "D")){
+      eligible_for_test = append(eligible_for_test, i)
+    }
+  }
+  tested_today = floor(length(eligible_for_test) * people_tested_coef)
+  if (tested_today > 0){
+    chosen_for_test = sample(unlist(eligible_for_test), tested_today, replace = FALSE)
+    for (i in 1:tested_today){
+      if (newday[[chosen_for_test[i]]]$status == "I"){
+        newday[[chosen_for_test[i]]]$status = "Q"
+      }
+    }
+  }
+  return (newday)
 }
 
 death_prob = function(day_number, i){ #ill for 3+ days
