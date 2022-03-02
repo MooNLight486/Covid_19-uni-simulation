@@ -2,7 +2,8 @@ all_list = list()
 people_in_kitchen = 10 #10
 rate = 0.7 #0.7
 penalty_rate = 0.35 #0.35
-quarantine_rate = 0.25 #0.2
+rate_for_professors = 0.2 #0.2
+quarantine_rate = 0.2 #0.2
 total_days = 30 #30
 infected_day_1 = 15 #15
 vaccinated_day_1 = 10 #35
@@ -12,7 +13,9 @@ testing_interval = 3 #3, interval between tests, days
 people_tested_coef = 0.3 #0.3, percentage of people tested every test period
 rate_of_death = 0.001 #0.009 according to UK stats // get rid of
 people_total = readline(prompt = "Enter number of people in sim ")
+professors_total = readline(prompt = "Enter number of professors in sim ")
 people_total = strtoi(people_total)
+professors_total = strtoi(professors_total)
 daily_list = list()
 
 create_list = function(){
@@ -20,7 +23,26 @@ create_list = function(){
   k = 0
   z = 1
   people_infected = sample(people_total, infected_day_1, replace = FALSE)
-  for (i in 1:people_total){
+  for (i in 1:professors_total){
+    check = FALSE
+    if (z <= infected_day_1){
+      for (a in 1:infected_day_1){
+        if (people_infected[a] == i){
+          check = TRUE
+          z = z + 1
+          person = list(status = "I", kitchen = 0, vaccine = 0)
+        }
+      }
+    }
+    else{
+      person = list(status = "S", kitchen = 0, vaccine = 0)
+    }
+    if (!check){
+      person = list(status = "S", kitchen = 0, vaccine = 0)
+    }
+    daily_list = append(daily_list, list(person))
+  }
+  for (i in (professors_total+1):people_total){
     if (k == people_in_kitchen){
       j = j + 1
       k = 0
